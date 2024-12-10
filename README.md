@@ -5,9 +5,23 @@ This project is to implement the election voting process used by the [LASFS](htt
 
 The LASFS Voting process is similiar to [Ranked Voting](https://en.wikipedia.org/wiki/Ranked_voting), more specifically Ranked-Choice Voting (RCV)/[Instant-runoff Voting](https://en.wikipedia.org/wiki/Instant-runoff_voting)
 
+
+## The voting process
+
+### Election Setup
+
 The voting is usually conducted during a LASFS meeting and depends on the number of positions up for vote, the number of nominees, and number of voting members.
 
 A minimum number of voting members (quorum) is needed to conduct a LASFS Election.
+
+The various positions:
+
+* President (conducts LASFS Meetings)
+* Vice-President
+* Scribe
+* Registar
+* Board Of Director position(s)
+
 
 At the start of the LASFS Election, the majority number value is computed from total of valid voting members.
 
@@ -15,9 +29,13 @@ Each position has a list of nominees.
 
 When the number of nominees equals the number of positions, voting is over, else, a voting period is opened.
 
+### Casting Voting Ballots
+
 Each voting member creates a ballot for the voting position.  (The ballot is a 3-inch by 5-inch colored index card where the color is defined for a specific position).  The ballot is a list of nominees in order of the voting member's preference for that specific position.
 
 The voting period is closed, and ballots are collected and processed in voting rounds.
+
+### Vote Processing
 
 For each voting round:
 
