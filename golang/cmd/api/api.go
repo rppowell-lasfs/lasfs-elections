@@ -32,3 +32,26 @@ package api
 
 // 	return http.ListenAndServe(s.addr, router)
 // }
+
+type CreateLASFSElectionPayload struct {
+	Position string   `json:"position"`
+	Nominees []string `json:"nominees"`
+}
+
+type UpdateLASFSElectionPayload struct {
+	ID    int    `json:"id"`
+	State string `json:"state"`
+}
+
+type CreateLASFSBallot struct {
+	Election  string   `json:"election"`
+	VoterName int      `json:"votername"`
+	Nominees  []string `json:"nominees"`
+}
+
+type RetrieveLASFSElectionResultReport struct {
+	Position       string `json:"position"`
+	ElectionStatus string `json:"status"`
+	// TODO
+	// Tally          []types.NomineeTally `json:"tally"`
+}

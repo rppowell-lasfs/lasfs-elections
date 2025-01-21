@@ -1,41 +1,20 @@
 package main
 
 import (
-	"election/types"
+	"crypto/sha256"
 	"fmt"
+	"log"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
 	fmt.Println("Hello World")
 
-	rawBallot := types.RawBallot{
-		VoterName: "Voter001",
-		Nominees:  []string{"Nominee01"},
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
 	}
-	fmt.Println("submittedBallot: %z", rawBallot)
-
-	lasfsBallot := rawBallot.MakeLASFSBallot()
-
-	fmt.Println("processedBallot: %z", lasfsBallot)
-
-	// testElection := types.Election{
-	// 	Position: "test",
-	// 	Nominees: []string{"George", "Karl", "Bob"},
-	// }
-	// fmt.Printf("testElection: %s", testElection.Position)
-	// fmt.Printf("testElection: %s", testElection.Nominees)
-
-	// submittedBallot001 := types.SubmittedBallot{
-	// 	VoterName: "one",
-	// 	Nominees:  []string{"George"},
-	// }
-
-	// submittedBallots := []types.SubmittedBallot{submittedBallot001}
-
-	// electionResults, err := utils.RunElection(testElection, submittedBallots)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Printf("electionResults: %z", electionResults)
+	sum := sha256.Sum256([]byte("hello world\n"))
+	fmt.Printf("%x", sum)
 }
