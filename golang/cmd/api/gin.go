@@ -3,6 +3,8 @@ package api
 import (
 	"election/storage"
 	"election/types"
+	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -20,7 +22,7 @@ func NewGinHandler(storage storage.StorageInterface) *GinHandler {
 	return &GinHandler{storage: storage}
 }
 
-func Signup(s storage.StorageInterface, c *gin.Context) {
+func (h *GinHandler) Signup(c *gin.Context) {
 	type CreateLASFSMemberPayload struct {
 		Name     string
 		Password string
@@ -39,7 +41,7 @@ func Signup(s storage.StorageInterface, c *gin.Context) {
 		})
 	}
 	user := types.LASFSMember{Name: body.Name, Password: string(hash)}
-	id, err := s.CreateLASFSMember(user)
+	id, err := h.storage.CreateLASFSMember(user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -51,7 +53,7 @@ func Signup(s storage.StorageInterface, c *gin.Context) {
 	}
 }
 
-func Login(s storage.StorageInterface, c *gin.Context) {
+func (h *GinHandler) Login(c *gin.Context) {
 	type LoginLASFSMemberPayload struct {
 		Name     string
 		Password string
@@ -64,7 +66,7 @@ func Login(s storage.StorageInterface, c *gin.Context) {
 		return
 	}
 
-	user := s.GetLASFSMemberByName(body.Name)
+	user := h.storage.GetLASFSMemberByName(body.Name)
 	if user == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "invalid name or password",
@@ -81,7 +83,7 @@ func Login(s storage.StorageInterface, c *gin.Context) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.Name,
+		"id":  user.Name,
 		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
 	})
 
@@ -104,50 +106,51 @@ func Login(s storage.StorageInterface, c *gin.Context) {
 	}
 }
 
-// func RequireAuth(c *gin.Context) {
-// 	tokenString, err := c.Cookie("Authorization")
-// 	if err != nil {
-// 		c.AbortWithStatus(http.StatusUnauthorized)
-// 	}
+func (h *GinHandler) RequireAuth(c *gin.Context) {
+	tokenString, err := c.Cookie("Authorization")
+	if err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+	}
 
-// 	hmacSampleSecret := os.Getenv("SECRET_KEY")
+	hmacSampleSecret := os.Getenv("SECRET_KEY")
 
-// 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-// 		// Don't forget to validate the alg is what you expect:
-// 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-// 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-// 		}
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
+		return hmacSampleSecret, nil
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
-// 		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
-// 		return hmacSampleSecret, nil
-// 	})
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		if time.Now().Unix() > claims["exp"].(int64) {
+			c.AbortWithStatus(http.StatusUnauthorized)
+		}
+		// fmt.Println(claims["sub"], claims["exp"])
+		var member types.LASFSMember = *(h.storage.GetLASFSMemberByName(claims["id"].(string)))
+		c.Set("user", member.Name)
+		c.Next()
+	} else {
+		// fmt.Println(err)
+		c.AbortWithStatus(http.StatusUnauthorized)
+	}
 
-// 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-// 		if time.Now().Unix() > claims["exp"].(int64) {
-// 			c.AbortWithStatus(http.StatusUnauthorized)
-// 		}
-// 		// fmt.Println(claims["sub"], claims["exp"])
-// 		var member types.LASFSMember
+}
 
-// 		c.Next()
-// 	} else {
-// 		// fmt.Println(err)
-// 		c.AbortWithStatus(http.StatusUnauthorized)
-// 	}
+func (h *GinHandler) Validate(c *gin.Context) {
+	user, _ := c.Get("user")
+	c.JSON(http.StatusOK, gin.H{
+		"message": "validated",
+		"user":    user,
+	})
+}
 
-// }
-
-// func Validate(c *gin.Context) {
-// 	c.JSON(http.StatusOK, gin.H{
-// 		"message": "validated",
-// 	})
-// }
-
-func GetLASFSElections(s storage.StorageInterface, c *gin.Context) {
-	elections := s.GetLASFSElectionsIDs()
+func (h *GinHandler) GetLASFSElections(c *gin.Context) {
+	elections := h.storage.GetLASFSElectionsIDs()
 	c.JSON(http.StatusOK, gin.H{
 		"elections": elections,
 	})
@@ -155,21 +158,17 @@ func GetLASFSElections(s storage.StorageInterface, c *gin.Context) {
 
 func RunGIN() {
 	s := storage.NewDevStorage()
+	ginHandler := NewGinHandler(s)
+
 	r := gin.Default()
 	r.POST("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
 		})
 	})
-	r.POST("/signup", func(c *gin.Context) {
-		Signup(s, c)
-	})
-	r.POST("/login", func(c *gin.Context) {
-		Login(s, c)
-	})
+	r.POST("/signup", ginHandler.Signup)
+	r.POST("/login", ginHandler.Login)
 	// r.GET("/validate", RequireAuth, Validate)
-	r.GET("/elections", func(c *gin.Context) {
-		GetLASFSElections(s, c)
-	})
+	r.GET("/elections", ginHandler.GetLASFSElections)
 	r.Run()
 }
