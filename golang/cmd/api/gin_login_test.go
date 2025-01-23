@@ -13,21 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPingRoute(t *testing.T) {
-	router := gin.Default()
-	router.GET("/ping", func(c *gin.Context) {
-		c.String(200, "pong")
-	})
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/ping", nil)
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, 200, w.Code)
-	assert.Equal(t, "pong", w.Body.String())
-}
-
-func TestTwo(t *testing.T) {
+func TestLogin(t *testing.T) {
 	t.Run(
 		"gin Tests Signup and Login",
 		func(t *testing.T) {
@@ -35,12 +21,11 @@ func TestTwo(t *testing.T) {
 			ginHandler := api.NewGinHandler(s)
 
 			r := gin.Default()
-			r.POST("/signup", ginHandler.Signup)
-			r.POST("/login", ginHandler.Login)
+			api.SetupGin(ginHandler, r)
 
 			type CreateLASFSMemberPayload struct {
-				Name     string
-				Password string
+				Name     string `json:"name"`
+				Password string `json:"password"`
 			}
 			createLASFSMemberPayload := CreateLASFSMemberPayload{
 				Name:     "TestName",
@@ -53,13 +38,11 @@ func TestTwo(t *testing.T) {
 			w := httptest.NewRecorder()
 			r.ServeHTTP(w, req)
 
-			assert.Equal(t, http.StatusCreated, w.Code, "StatusCreated")
+			assert.Equal(t, http.StatusCreated, w.Code, "HTTP StatusCreated")
+			expectedData := `{"id":"TestName"}`
+			assert.Equal(t, expectedData, w.Body.String())
 
-			// mockResponse := `{"name":"1"}`
-			// responseData, _ := io.ReadAll(w.Body)
-			// assert.Equal(t, mockResponse, responseData)
-			// t.Errorf("received '%v'", w)
-
+			assert.Contains(t, s.LASFSMembers, createLASFSMemberPayload.Name)
 		},
 	)
 }

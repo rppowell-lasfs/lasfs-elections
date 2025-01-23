@@ -1,55 +1,55 @@
 package api
 
-// import (
-// 	"database/sql"
-// 	"log"
-// 	"net/http"
+type ErrorResponsePayload struct {
+	ErrorMessage string `json:"error"`
+}
 
-// 	"github.com/gorilla/mux"
-// )
-
-// type APIServer struct {
-// 	addr string
-// 	db   *sql.DB
-// }
-
-// func NewAPIServer(addr string, db *sql.DB) *APIServer {
-// 	return &APIServer{
-// 		addr: addr,
-// 		db:   db,
-// 	}
-// }
-
-// func (s *APIServer) Run() error {
-// 	router := mux.NewRouter()
-// 	subrouter := router.PathPrefix("/api/v1").Subrouter()
-
-// 	userStore := user.NewStore(s.db)
-// 	userHandler := user.NewHandler(userStore)
-// 	userHandler.RegisterRoutes(subrouter)
-
-// 	log.Println("Listening on", s.addr)
-
-// 	return http.ListenAndServe(s.addr, router)
-// }
-
-type CreateLASFSElectionPayload struct {
+type CreateLASFSElectionRequestPayload struct {
 	Position string   `json:"position"`
 	Nominees []string `json:"nominees"`
 }
 
-type UpdateLASFSElectionPayload struct {
-	ID    int    `json:"id"`
-	State string `json:"state"`
+type GetLASFSElectionsResponsePayload struct {
+	LASFSElections []string `json:"elections"`
 }
 
-type CreateLASFSBallot struct {
-	Election  string   `json:"election"`
-	VoterName int      `json:"votername"`
-	Nominees  []string `json:"nominees"`
+type GetLASFSElectionResponsePayload struct {
+	ElectionID       string   `json:"election"`
+	ElectionPosition string   `json:"position"`
+	ElectionStatus   string   `json:"status"`
+	Nominees         []string `json:"nominees"`
 }
 
-type RetrieveLASFSElectionResultReport struct {
+type CreateLASFSMemberRequestPayload struct {
+	Name     string `json:"name"`
+	Password string `json:"password"`
+}
+type CreateLASFSMemberResponsePayload struct {
+	ID string `json:"id"`
+}
+
+type LASFSMemberLoginRequestPayload struct {
+	Name     string `json:"name"`
+	Password string `json:"password"`
+}
+
+type CreateLASFSBallotRequestPayload struct {
+	Election string   `json:"election"`
+	VoterID  string   `json:"id"`
+	Nominees []string `json:"nominees"`
+}
+
+type GetLASFSBallotResponsePayload struct {
+	Election string   `json:"election"`
+	VoterID  string   `json:"id"`
+	Nominees []string `json:"nominees"`
+}
+
+type PostLASFSBallotRequestPayload struct {
+	Nominees []string `json:"nominees"`
+}
+
+type GetLASFSElectionResultReport struct {
 	Position       string `json:"position"`
 	ElectionStatus string `json:"status"`
 	// TODO

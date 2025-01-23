@@ -2,15 +2,24 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	PublicHost string
-	PublicPort string
+	APIConfig APIConfig
+	DBConfig  DBConfig
+}
 
+type APIConfig struct {
+	PublicHost   string
+	PublicPort   string
+	BcryptSecret string
+}
+
+type DBConfig struct {
 	DBUser     string
 	DBPassword string
 	DBAddress  string
@@ -20,18 +29,26 @@ type Config struct {
 var Envs = initConfig()
 
 func initConfig() Config {
-	godotenv.Load()
-	return Config{
-		PublicHost: getEnv("PUBLIC_HOST", "http://localhost"),
-		PublicPort: getEnv("PUBLIC_PORT", "8080"),
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
-		DBUser:     getEnv("DB_USERNAME", "root"),
-		DBPassword: getEnv("DB_PASSWORD", "test"),
-		DBAddress: fmt.Sprintf("%s:%s",
-			getEnv("DB_HOST", "localhost"),
-			getEnv("DB_PORT", "3306"),
-		),
-		DBName: getEnv("DB_NAME", "test"),
+	return Config{
+		APIConfig: APIConfig{
+			PublicHost:   getEnv("PUBLIC_HOST", "http://localhost"),
+			PublicPort:   getEnv("PUBLIC_PORT", "8080"),
+			BcryptSecret: getEnv("BCRYPT_SECRET", ""),
+		},
+		DBConfig: DBConfig{
+			DBUser:     getEnv("DB_USERNAME", "root"),
+			DBPassword: getEnv("DB_PASSWORD", "test"),
+			DBAddress: fmt.Sprintf("%s:%s",
+				getEnv("DB_HOST", "localhost"),
+				getEnv("DB_PORT", "3306"),
+			),
+			DBName: getEnv("DB_NAME", "test"),
+		},
 	}
 }
 

@@ -1,17 +1,20 @@
 package utils
 
 import (
-	"election/types"
+	"regexp"
 )
 
-func RunElection(e types.LASFSElection, submittedBallots []types.RawBallot) (*types.LASFSElectionResult, error) {
-	// electionResults := new(types.ElectionResults)
-	// for _, submittedBallot := range submittedBallots {
+var DateTimeFormatString = `2006-01-02T15-04-05.000000000Z0700`
+var DateTimeRegexpString = `^(?P<yyyy>\d{4})-(?P<mm>\d{2})-(?P<dd>\d{2})T(?P<HH>\d{2})-(?P<MM>\d{2})-(?P<SS>\d{2})\.(?P<nnnnnnnnn>\d{9})Z`
 
-	// }
-	return nil, nil
+func LASFSElectionIDFromString(s string) string {
+	m := regexp.MustCompile("[^a-zA-Z0-9]")
+	s = m.ReplaceAllString(s, "_")
+	return s
 }
 
-// func ProcessLASFSBallot(e types.Election, ballot types.LASFSBallot) {
-
-// }
+func LASFSMemberIDFromString(s string) string {
+	m := regexp.MustCompile("[^a-zA-Z0-9]")
+	s = m.ReplaceAllString(s, "")
+	return s
+}

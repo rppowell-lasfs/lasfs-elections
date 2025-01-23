@@ -4,42 +4,32 @@ import (
 	"election/types"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLASFSBallotFromRawBallot(t *testing.T) {
-
 	rawBallot := types.RawBallot{
 		VoterName: "Voter001",
 		Nominees:  []string{"Nominee01", "Nominee02", "Nominee03"},
 	}
 
-	// r := (&types.RawBallot{
-	// 	VoterName: "Voter001",
-	// 	Nominees:  []string{"Nominee01", "Nominee02", "Nominee03"},
-	// }).MakeLASFSBallot()
-	// log.Printf("%v\n", r)
+	lasfsBallot := rawBallot.MakeLASFSBallot()
+	expectedLASFSBallot := types.LASFSBallot{
+		VoterName: "Voter001",
+		Nominees: []types.NomineeEntry{
+			{NomineeName: "Nominee01", IsValid: true},
+			{NomineeName: "Nominee02", IsValid: true},
+			{NomineeName: "Nominee03", IsValid: true},
+		}}
+	if !reflect.DeepEqual(lasfsBallot, expectedLASFSBallot) {
+		t.Errorf("NewLASFSBallot() got '%v', expecting '%v'", lasfsBallot, expectedLASFSBallot)
+	}
 
-	t.Run(
-		"LASFSBallot Initalize Nominee01",
-		func(t *testing.T) {
-			lasfsBallot := rawBallot.MakeLASFSBallot()
-			expectedLASFSBallot := types.LASFSBallot{
-				VoterName: "Voter001",
-				Nominees: []types.NomineeEntry{
-					{NomineeName: "Nominee01", IsValid: true},
-					{NomineeName: "Nominee02", IsValid: true},
-					{NomineeName: "Nominee03", IsValid: true},
-				}}
-			if !reflect.DeepEqual(lasfsBallot, expectedLASFSBallot) {
-				t.Errorf("NewLASFSBallot() got '%v', expecting '%v'", lasfsBallot, expectedLASFSBallot)
-			}
-
-			nextNominee := lasfsBallot.GetNextNominee()
-			if nextNominee != "Nominee01" {
-				t.Errorf("GetNextNominee() got '%v', expecting '%v'", nextNominee, "Nominee01")
-			}
-		},
-	)
+	nextNominee := lasfsBallot.GetNextNominee()
+	if nextNominee != "Nominee01" {
+		t.Errorf("GetNextNominee() got '%v', expecting '%v'", nextNominee, "Nominee01")
+	}
 }
 
 func TestLASFSBallotFunctions(t *testing.T) {
@@ -50,7 +40,7 @@ func TestLASFSBallotFunctions(t *testing.T) {
 	}
 
 	t.Run(
-		"LASFSBallot Initalize Nominee01",
+		"LASFSBallot from RawBallot 1",
 		func(t *testing.T) {
 			lasfsBallot := rawBallot.MakeLASFSBallot()
 			expectedLASFSBallot := types.LASFSBallot{
@@ -305,4 +295,18 @@ func TestLASFSBallotScratchFunctions(t *testing.T) {
 
 		},
 	)
+}
+
+func TestLASFSBallotNomineeVotes(t *testing.T) {
+	lasfsBallot := types.LASFSBallot{
+		VoterName: "Voter001",
+		Nominees: []types.NomineeEntry{
+			{NomineeName: "Nominee01", IsValid: true},
+			{NomineeName: "Nominee02", IsValid: true},
+			{NomineeName: "Nominee03", IsValid: true},
+		}}
+
+	nomineeVotes := lasfsBallot.NomineeVotes()
+	assert.Equal(t, []string{"Nominee01", "Nominee02", "Nominee03"}, nomineeVotes)
+
 }

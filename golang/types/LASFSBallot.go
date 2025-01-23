@@ -1,6 +1,7 @@
 package types
 
 type LASFSBallot struct {
+	VoterID   string
 	VoterName string
 	Nominees  []NomineeEntry
 	IsDead    bool
@@ -38,4 +39,23 @@ func (l *LASFSBallot) UpdateBallotStatus() {
 		}
 		l.IsDead = true
 	}
+}
+
+func (l *LASFSBallot) NomineeVotes() []string {
+	nominees := make([]string, 0)
+	for _, n := range l.Nominees {
+		nominees = append(nominees, n.NomineeName)
+	}
+	return nominees
+}
+
+func NewLASFSBallot(voterId string, VoterName string, Nominees []string) LASFSBallot {
+	p := LASFSBallot{
+		VoterID:   voterId,
+		VoterName: VoterName,
+	}
+	for _, nominee := range Nominees {
+		p.Nominees = append(p.Nominees, NomineeEntry{NomineeName: nominee, IsValid: true})
+	}
+	return p
 }

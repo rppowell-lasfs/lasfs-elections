@@ -5,28 +5,20 @@ import (
 	"time"
 )
 
-// type Storage interface {
-// 	// NewStorage() Storage
-// 	NewLASFSElection(position string, createdDateTime time.Time) string
-// 	GetLASFSElectionsIDs() []string
-// 	GetLASFSElectionByID(id string) types.LASFSElection
-// 	CreateLASFSMember(newMember types.LASFSMember) (string, error)
-// 	GetLASFSMemberByID(id string) types.LASFSMember
-// 	GetLASFSMemberByName(name string) types.LASFSMember
-// 	AddLASFSBallotToLASFSElection(id string, ballot types.LASFSBallot)
-// }
-
 type StorageInterface interface {
 	// NewStorage() Storage
-	NewLASFSElection(position string, createdDateTime time.Time) string
+	NewLASFSElection(position string, createdDateTime time.Time, nominees []string) *types.LASFSElection
 	GetLASFSElectionsIDs() []string
-	GetLASFSElectionByID(id string) types.LASFSElection
+	GetLASFSElectionByID(id string) (*types.LASFSElection, error)
+	GetLASFSBallot(election_id string, member_id string) (*types.LASFSBallot, error)
+	NewLASFSBallot(memberId string, nominees []string) (*types.LASFSBallot, error)
+	AddLASFSBallot(election_id string, ballot types.LASFSBallot) (*types.LASFSElection, error)
+	AddNewLASFSBallot(election_id string, member_id string, nominees []string) (*types.LASFSElection, error)
 	StorageLASFSMemberInterface
-	AddLASFSBallotToLASFSElection(id string, ballot types.LASFSBallot)
 }
 
 type StorageLASFSMemberInterface interface {
-	CreateLASFSMember(newMember types.LASFSMember) (string, error)
-	GetLASFSMemberByID(id string) *types.LASFSMember
-	GetLASFSMemberByName(name string) *types.LASFSMember
+	CreateLASFSMember(username string, password string) (*types.LASFSMember, error)
+	GetLASFSMemberByID(id string) (*types.LASFSMember, error)
+	GetLASFSMemberByName(name string) (*types.LASFSMember, error)
 }

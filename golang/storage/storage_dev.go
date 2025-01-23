@@ -3,28 +3,31 @@ package storage
 import (
 	"election/types"
 	"errors"
+	"fmt"
 	"sort"
-	"strconv"
 	"time"
 )
 
 type DevStorage struct {
-	LASFSElections map[string]types.LASFSElection
-	Members        []types.LASFSMember
+	LASFSElections map[string]*types.LASFSElection
+	LASFSMembers   map[string]types.LASFSMember
+	LASFSMemberIDs []string
 }
 
 func NewDevStorage() *DevStorage {
 	return &DevStorage{
-		LASFSElections: make(map[string]types.LASFSElection),
+		LASFSElections: make(map[string]*types.LASFSElection),
+		LASFSMembers:   make(map[string]types.LASFSMember),
+		LASFSMemberIDs: make([]string, 0),
 	}
 }
 
-func (s *DevStorage) NewLASFSElection(position string, createdDateTime time.Time) string {
-	e := types.NewLASFSElection(position, createdDateTime)
+func (s *DevStorage) NewLASFSElection(position string, createdDateTime time.Time, nominees []string) *types.LASFSElection {
+	e := types.NewLASFSElection(position, createdDateTime, nominees)
 	id := e.ID
 	e.DateTimeCreated = createdDateTime
-	s.LASFSElections[id] = *e
-	return id
+	s.LASFSElections[id] = &e
+	return &e
 }
 
 func (s *DevStorage) GetLASFSElectionsIDs() []string {
@@ -37,55 +40,98 @@ func (s *DevStorage) GetLASFSElectionsIDs() []string {
 	return keys
 }
 
-func (s *DevStorage) GetLASFSElectionByID(id string) types.LASFSElection {
-	return s.LASFSElections[id]
+func (s *DevStorage) GetLASFSElectionByID(id string) (*types.LASFSElection, error) {
+	m, ok := s.LASFSElections[id]
+	if !ok {
+		return nil, fmt.Errorf("unable to find election '%s'", id)
+	}
+	return m, nil
 }
 
-func (s *DevStorage) CreateLASFSMember(newMember types.LASFSMember) (string, error) {
-	var entry string
-	var err error
-	index := s.findLASFSMember(newMember)
-	if index == -1 {
-		s.Members = append(s.Members, newMember)
-		entry = strconv.Itoa(len(s.Members))
+func (s *DevStorage) CreateLASFSMember(username string, password string) (*types.LASFSMember, error) {
+	_, err := s.GetLASFSMemberByName(username)
+	if err != nil {
+		newMember := types.NewLASFSMember(username, password)
+		id := newMember.GetID()
+
+		existingmember, _ := s.GetLASFSMemberByID(id)
+		if existingmember != nil {
+			return nil, fmt.Errorf("unable to create LASFSMember, duplicate ID '%s'", id)
+		} else {
+			s.LASFSMembers[id] = *newMember
+			s.LASFSMemberIDs = append(s.LASFSMemberIDs, id)
+			return newMember, nil
+		}
 	} else {
-		entry = strconv.Itoa(len(s.Members))
-		err = errors.New("LASFSMember already created")
+		return nil, fmt.Errorf("unable to create LASFSMember, name '%s' already exists", username)
 	}
-	return entry, err
 }
 
-func (s *DevStorage) findLASFSMember(n types.LASFSMember) int {
-	index := -1 // Initialize with -1 to indicate not found
-	for i, m := range s.Members {
-		if m.GetName() == n.GetName() {
-			index = i
-			break // Exit the loop once the target is found
-		}
-	}
-	return index
-}
-
-func (s *DevStorage) GetLASFSMemberByName(n string) *types.LASFSMember {
-	// TODO handle user not found index -1
-	index := -1 // Initialize with -1 to indicate not found
-	for i, m := range s.Members {
+func (s *DevStorage) GetLASFSMemberByName(n string) (*types.LASFSMember, error) {
+	for _, m := range s.LASFSMembers {
 		if m.GetName() == n {
-			index = i
-			break // Exit the loop once the target is found
+			return &m, nil
 		}
 	}
-	return &s.Members[index]
+	return nil, errors.New("unable to find member)")
 }
 
-func (s *DevStorage) GetLASFSMemberByID(id string) *types.LASFSMember {
-	// TODO handle user not found index -1
-	index, _ := strconv.Atoi(id)
-	return &s.Members[index]
+func (s *DevStorage) GetLASFSMemberByID(id string) (*types.LASFSMember, error) {
+	m, ok := s.LASFSMembers[id]
+	if ok {
+		return &m, nil
+	} else {
+		return nil, fmt.Errorf("unable to find member by id '%s'", id)
+	}
 }
 
-func (s *DevStorage) AddLASFSBallotToLASFSElection(id string, ballot types.LASFSBallot) {
-	// TODO - check and handle duplicate username in LASFSBallots
-	l := s.LASFSElections[id]
-	l.LASFSBallots = append(l.LASFSBallots, ballot)
+func (s *DevStorage) GetLASFSBallot(electionId string, memberId string) (*types.LASFSBallot, error) {
+	e, err := s.GetLASFSElectionByID(electionId)
+	if err != nil {
+		return nil, err
+	} else {
+		return e.GetLASFSMemberBallot(memberId)
+	}
+}
+
+func (s *DevStorage) NewLASFSBallot(memberId string, nominees []string) (*types.LASFSBallot, error) {
+	member, err := s.GetLASFSMemberByID(memberId)
+	if err != nil {
+		return nil, err
+	}
+	ballot := types.NewLASFSBallot(member.ID, member.Name, nominees)
+	return &ballot, nil
+}
+
+func (s *DevStorage) AddLASFSBallot(electionId string, ballot types.LASFSBallot) (*types.LASFSElection, error) {
+	e, err := s.GetLASFSElectionByID(electionId)
+	if err != nil {
+		return nil, err // unable to find election
+	}
+	_, err = e.GetLASFSMemberBallot(ballot.VoterID)
+	if err == nil {
+		return nil, errors.New("ballot exists")
+	}
+	e.LASFSBallots = append(e.LASFSBallots, &ballot)
+	return e, nil
+}
+
+func (s *DevStorage) AddNewLASFSBallot(election_id string, member_id string, nominees []string) (*types.LASFSElection, error) {
+	member, err := s.GetLASFSMemberByID(member_id)
+	if err != nil {
+		return nil, err
+	}
+	ballot := types.NewLASFSBallot(member.ID, member.Name, nominees)
+	e, err := s.GetLASFSElectionByID(election_id)
+	if err != nil {
+		return nil, err // unable to find election
+	}
+
+	_, err = e.GetLASFSMemberBallot(ballot.VoterID)
+	if err != nil {
+		return nil, errors.New("ballot exists")
+	}
+	e.LASFSBallots = append(e.LASFSBallots, &ballot)
+	return e, nil
+
 }
