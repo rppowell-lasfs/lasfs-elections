@@ -32,7 +32,7 @@ func TestGetElectionNoNominees(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code, "StatusOK")
 
 	responseData, _ := io.ReadAll(w.Body)
-	expectedData := fmt.Sprintf(`{"election:":{"election":"%s","position":"Test1","status":"","nominees":[]}}`, id)
+	expectedData := fmt.Sprintf(`{"election":"%s","position":"Test1","status":"","nominees":[]}`, id)
 	assert.Equal(t, expectedData, string(responseData))
 }
 
@@ -54,6 +54,6 @@ func TestGetElectionWithNominees(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code, "StatusOK")
 
 	responseData, _ := io.ReadAll(w.Body)
-	expectedData := fmt.Sprintf(`{"election:":{"election":"%s","position":"Test1","status":"","nominees":["Alpha","Bravo","Charlie"]}}`, id)
+	expectedData := fmt.Sprintf(`{"election":"%s","position":"Test1","status":"","nominees":["Alpha","Bravo","Charlie"]}`, id)
 	assert.Equal(t, expectedData, string(responseData))
 }

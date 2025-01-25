@@ -174,14 +174,51 @@ func (h *GinHandler) GetLASFSElection(c *gin.Context) {
 		if election.Nominees == nil {
 			nominees = make([]string, 0)
 		}
-		c.JSON(http.StatusOK, gin.H{
-			"election:": GetLASFSElectionResponsePayload{
+		c.JSON(http.StatusOK, GetLASFSElectionResponsePayload{
+			ElectionID:       election.ID,
+			ElectionPosition: election.Position,
+			ElectionStatus:   election.Status,
+			Nominees:         nominees,
+		},
+		)
+	}
+}
+
+func (h *GinHandler) GetLASFSElectionBallots(c *gin.Context) {
+	election_id := c.Param("election_id")
+	election, err := h.storage.GetLASFSElectionByID(election_id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponsePayload{
+			ErrorMessage: "election not found",
+		})
+		return
+	} else {
+		nominees := election.Nominees
+		if election.Nominees == nil {
+			nominees = make([]string, 0)
+		}
+		ballots := make([]BallotPayload, 0)
+		for _, ballot := range election.LASFSBallots {
+			ballotnominees := make([]string, 0)
+			for _, nominee := range ballot.Nominees {
+				ballotnominees = append(ballotnominees, nominee.NomineeName)
+			}
+			ballots = append(ballots, BallotPayload{
+				VoterID:   ballot.VoterID,
+				VoterName: ballot.VoterName,
+				Nominees:  ballotnominees,
+			})
+		}
+		c.JSON(http.StatusOK, GetLASFSElectionBallotsResponsePayload{
+			GetLASFSElectionResponsePayload: GetLASFSElectionResponsePayload{
 				ElectionID:       election.ID,
 				ElectionPosition: election.Position,
 				ElectionStatus:   election.Status,
 				Nominees:         nominees,
 			},
-		})
+			Ballots: ballots,
+		},
+		)
 	}
 }
 
@@ -255,7 +292,7 @@ func SetupGin(ginHandler *GinHandler, r *gin.Engine) {
 	// r.GET("/validate", RequireAuth, Validate)
 	r.GET("/elections", ginHandler.GetLASFSElections)
 	r.GET("/election/:election_id", ginHandler.GetLASFSElection)
-	// r.GET("/votes/:election_id/", ginHandler.GetVotesForElection)
+	r.GET("/votes/:election_id", ginHandler.GetLASFSElectionBallots)
 	r.GET("/vote/:election_id/:member_id", ginHandler.GetBallotForElectionByMember)
 	r.POST("/vote/:election_id/:member_id", ginHandler.PostBallotForElectionByMember)
 }

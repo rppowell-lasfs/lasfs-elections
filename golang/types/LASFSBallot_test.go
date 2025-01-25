@@ -16,6 +16,7 @@ func TestLASFSBallotFromRawBallot(t *testing.T) {
 
 	lasfsBallot := rawBallot.MakeLASFSBallot()
 	expectedLASFSBallot := types.LASFSBallot{
+		VoterID:   "Voter001",
 		VoterName: "Voter001",
 		Nominees: []types.NomineeEntry{
 			{NomineeName: "Nominee01", IsValid: true},
@@ -44,6 +45,7 @@ func TestLASFSBallotFunctions(t *testing.T) {
 		func(t *testing.T) {
 			lasfsBallot := rawBallot.MakeLASFSBallot()
 			expectedLASFSBallot := types.LASFSBallot{
+				VoterID:   "Voter001",
 				VoterName: "Voter001",
 				Nominees: []types.NomineeEntry{
 					{NomineeName: "Nominee01", IsValid: true},
@@ -74,6 +76,7 @@ func TestLASFSBallotFunctions(t *testing.T) {
 				t.Errorf("GetNextNominee() got '%v', expecting '%v'", nextNominee, "Nominee02")
 			}
 			expectedLASFSBallot = types.LASFSBallot{
+				VoterID:   "Voter001",
 				VoterName: "Voter001",
 				Nominees: []types.NomineeEntry{
 					{NomineeName: "Nominee01", IsValid: false},
@@ -96,6 +99,7 @@ func TestLASFSBallotFunctions(t *testing.T) {
 				t.Errorf("GetNextNominee() got '%v', expecting '%v'", nextNominee, "Nominee02")
 			}
 			expectedLASFSBallot = types.LASFSBallot{
+				VoterID:   "Voter001",
 				VoterName: "Voter001",
 				Nominees: []types.NomineeEntry{
 					{NomineeName: "Nominee01", IsValid: false},
@@ -117,6 +121,7 @@ func TestLASFSBallotFunctions(t *testing.T) {
 				t.Errorf("GetNextNominee() got '%v', expecting '%v'", nextNominee, "Nominee03")
 			}
 			expectedLASFSBallot = types.LASFSBallot{
+				VoterID:   "Voter001",
 				VoterName: "Voter001",
 				Nominees: []types.NomineeEntry{
 					{NomineeName: "Nominee01", IsValid: false},
@@ -138,6 +143,7 @@ func TestLASFSBallotFunctions(t *testing.T) {
 				t.Errorf("GetNextNominee() got '%v', expecting '%v'", nextNominee, "")
 			}
 			expectedLASFSBallot = types.LASFSBallot{
+				VoterID:   "Voter001",
 				VoterName: "Voter001",
 				Nominees: []types.NomineeEntry{
 					{NomineeName: "Nominee01", IsValid: false},
@@ -160,6 +166,7 @@ func TestLASFSBallotFunctions(t *testing.T) {
 				t.Errorf("GetNextNominee() got '%v', expecting '%v'", nextNominee, "")
 			}
 			expectedLASFSBallot = types.LASFSBallot{
+				VoterID:   "Voter001",
 				VoterName: "Voter001",
 				Nominees: []types.NomineeEntry{
 					{NomineeName: "Nominee01", IsValid: false},

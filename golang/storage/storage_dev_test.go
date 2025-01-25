@@ -16,9 +16,9 @@ func TestDevStorageNewLASFSElection(t *testing.T) {
 		"DevStorage newLASFSElection 01",
 		func(t *testing.T) {
 
-			regString := `^(?P<yyyy>\d{4})-(?P<mm>\d{2})-(?P<dd>\d{2})T(?P<HH>\d{2})-(?P<MM>\d{2})-(?P<SS>\d{2})\.(?P<nnnnnnnnn>\d{9})Z`
+			regString := `(?P<yyyy>\d{4})-(?P<mm>\d{2})-(?P<dd>\d{2})T(?P<HH>\d{2})-(?P<MM>\d{2})-(?P<SS>\d{2})\.(?P<nnnnnnnnn>\d{9})Z`
 
-			re1 := regexp.MustCompile(regString + `_Test1$`)
+			re1 := regexp.MustCompile(`^` + regString + `_Test1$`)
 
 			s := storage.NewDevStorage()
 
@@ -43,7 +43,7 @@ func TestDevStorageNewLASFSElection(t *testing.T) {
 				t.Errorf("ProcessLASFSBallot() got '%v', expecting '%v'", electionIDs1, expectedElectionIDs1)
 			}
 
-			re2 := regexp.MustCompile(regString + `_Test_2$`)
+			re2 := regexp.MustCompile(`^` + regString + `_Test_2$`)
 			n2 := time.Now().UTC()
 			e2 := s.NewLASFSElection("Test 2", n2, nil)
 			id2 := e2.ID
@@ -65,7 +65,7 @@ func TestDevStorageNewLASFSElection(t *testing.T) {
 				t.Errorf("ProcessLASFSBallot() got '%v', expecting '%v'", electionIDs2, expectedElectionIDs2)
 			}
 
-			re3 := regexp.MustCompile(regString + `_Test_3$`)
+			re3 := regexp.MustCompile(`^` + regString + `_Test_3$`)
 			n3 := time.Now().UTC()
 			e3 := s.NewLASFSElection("Test:3", n3, nil)
 			id3 := e3.ID

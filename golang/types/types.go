@@ -1,6 +1,7 @@
 package types
 
 import (
+	"election/utils"
 	"sort"
 )
 
@@ -11,6 +12,7 @@ type RawBallot struct {
 
 func (r *RawBallot) MakeLASFSBallot() LASFSBallot {
 	p := LASFSBallot{
+		VoterID:   utils.LASFSMemberIDFromString(r.VoterName),
 		VoterName: r.VoterName,
 	}
 	for _, nominee := range r.Nominees {

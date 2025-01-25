@@ -20,6 +20,17 @@ type GetLASFSElectionResponsePayload struct {
 	Nominees         []string `json:"nominees"`
 }
 
+type BallotPayload struct {
+	VoterID   string   `json:"voterid"`
+	VoterName string   `json:"votername"`
+	Nominees  []string `json:"nominees"`
+}
+
+type GetLASFSElectionBallotsResponsePayload struct {
+	GetLASFSElectionResponsePayload
+	Ballots []BallotPayload `json:"ballots"`
+}
+
 type CreateLASFSMemberRequestPayload struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`
@@ -47,11 +58,4 @@ type GetLASFSBallotResponsePayload struct {
 
 type PostLASFSBallotRequestPayload struct {
 	Nominees []string `json:"nominees"`
-}
-
-type GetLASFSElectionResultReport struct {
-	Position       string `json:"position"`
-	ElectionStatus string `json:"status"`
-	// TODO
-	// Tally          []types.NomineeTally `json:"tally"`
 }
