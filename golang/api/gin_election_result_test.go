@@ -31,7 +31,7 @@ func TestGetElectionResult1Vote(t *testing.T) {
 	b1 := types.NewLASFSBallot("TestVoter", "TestVoter", []string{"Alpha", "Bravo", "Charlie"})
 	s.AddLASFSBallot(id1, b1)
 
-	req, _ := http.NewRequest("GET", fmt.Sprintf("/electionresults/%s", id1), nil)
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/electionresult/%s", id1), nil)
 
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
@@ -82,7 +82,7 @@ func TestGetElectionResult3VoteS(t *testing.T) {
 	b3 := types.NewLASFSBallot("TestVoter3", "TestVoter3", []string{"Alpha", "Bravo", "Charlie"})
 	s.AddLASFSBallot(id1, b3)
 
-	req, _ := http.NewRequest("GET", fmt.Sprintf("/electionresults/%s", id1), nil)
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/electionresult/%s", id1), nil)
 
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
