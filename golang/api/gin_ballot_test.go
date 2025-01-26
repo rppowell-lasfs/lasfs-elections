@@ -2,7 +2,7 @@ package api_test
 
 import (
 	"bytes"
-	"election/cmd/api"
+	"election/api"
 	"election/storage"
 	"election/types"
 	"encoding/json"

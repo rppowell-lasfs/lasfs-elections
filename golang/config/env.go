@@ -9,6 +9,7 @@ import (
 )
 
 type Config struct {
+	Secret    string
 	APIConfig APIConfig
 	DBConfig  DBConfig
 }
@@ -26,7 +27,13 @@ type DBConfig struct {
 	DBName     string
 }
 
-var Envs = initConfig()
+// var Envs = initConfig()
+
+var Envs Config
+
+func InitEnvs() {
+	Envs = initConfig()
+}
 
 func initConfig() Config {
 	err := godotenv.Load()
@@ -35,10 +42,10 @@ func initConfig() Config {
 	}
 
 	return Config{
+		Secret: getEnv("SECRET", ""),
 		APIConfig: APIConfig{
-			PublicHost:   getEnv("PUBLIC_HOST", "http://localhost"),
-			PublicPort:   getEnv("PUBLIC_PORT", "8080"),
-			BcryptSecret: getEnv("BCRYPT_SECRET", ""),
+			PublicHost: getEnv("PUBLIC_HOST", "http://localhost"),
+			PublicPort: getEnv("PUBLIC_PORT", "8080"),
 		},
 		DBConfig: DBConfig{
 			DBUser:     getEnv("DB_USERNAME", "root"),

@@ -293,8 +293,8 @@ func SetupGin(ginHandler *GinHandler, r *gin.Engine) {
 	r.GET("/elections", ginHandler.GetLASFSElections)
 	r.GET("/election/:election_id", ginHandler.GetLASFSElection)
 	r.GET("/votes/:election_id", ginHandler.GetLASFSElectionBallots)
-	r.GET("/vote/:election_id/:member_id", ginHandler.GetBallotForElectionByMember)
 	r.POST("/vote/:election_id/:member_id", ginHandler.PostBallotForElectionByMember)
+	r.GET("/vote/:election_id/:member_id", ginHandler.GetBallotForElectionByMember)
 }
 
 func RunGIN() {

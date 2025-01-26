@@ -1,9 +1,8 @@
 package api_test
 
 import (
-	"election/cmd/api"
+	"election/api"
 	"election/storage"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -14,17 +13,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetElectionNoNominees(t *testing.T) {
+func TestGetElectionsIDs1(t *testing.T) {
 	s := storage.NewDevStorage()
 	ginHandler := api.NewGinHandler(s)
 
 	r := gin.Default()
 	api.SetupGin(ginHandler, r)
 
-	n := time.Now().UTC()
-	id := s.NewLASFSElection("Test1", n, nil).ID
+	n1 := time.Now().UTC()
+	e1 := s.NewLASFSElection("Test1", n1, nil)
+	id1 := e1.ID
 
-	req, _ := http.NewRequest("GET", fmt.Sprintf("/election/%s", id), nil)
+	req, _ := http.NewRequest("GET", "/elections", nil)
 
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
@@ -32,21 +32,28 @@ func TestGetElectionNoNominees(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code, "StatusOK")
 
 	responseData, _ := io.ReadAll(w.Body)
-	expectedData := fmt.Sprintf(`{"election":"%s","position":"Test1","status":"","nominees":[]}`, id)
+	expectedData := `{"elections":["` + id1 + `"]}`
 	assert.Equal(t, expectedData, string(responseData))
 }
 
-func TestGetElectionWithNominees(t *testing.T) {
+func TestGetElectionsIDs3(t *testing.T) {
 	s := storage.NewDevStorage()
 	ginHandler := api.NewGinHandler(s)
 
 	r := gin.Default()
 	api.SetupGin(ginHandler, r)
 
-	n := time.Now().UTC()
-	id := s.NewLASFSElection("Test1", n, []string{"Alpha", "Bravo", "Charlie"}).ID
+	n1 := time.Now().UTC()
+	e1 := s.NewLASFSElection("Test1", n1, nil)
+	id1 := e1.ID
+	n2 := time.Now().UTC()
+	e2 := s.NewLASFSElection("Test 2", n2, nil)
+	id2 := e2.ID
+	n3 := time.Now().UTC()
+	e3 := s.NewLASFSElection("Test:3", n3, nil)
+	id3 := e3.ID
 
-	req, _ := http.NewRequest("GET", fmt.Sprintf("/election/%s", id), nil)
+	req, _ := http.NewRequest("GET", "/elections", nil)
 
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
@@ -54,6 +61,6 @@ func TestGetElectionWithNominees(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code, "StatusOK")
 
 	responseData, _ := io.ReadAll(w.Body)
-	expectedData := fmt.Sprintf(`{"election":"%s","position":"Test1","status":"","nominees":["Alpha","Bravo","Charlie"]}`, id)
+	expectedData := `{"elections":["` + id1 + `","` + id2 + `","` + id3 + `"]}`
 	assert.Equal(t, expectedData, string(responseData))
 }
