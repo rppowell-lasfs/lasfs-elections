@@ -269,7 +269,7 @@ func (h *GinHandler) PostBallotForElectionByMember(c *gin.Context) {
 
 	_, err = h.storage.AddLASFSBallot(election_id, *ballot)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, ErrorResponsePayload{
+		c.JSON(http.StatusBadRequest, ErrorResponsePayload{
 			ErrorMessage: "error adding ballot",
 		})
 	}
@@ -279,6 +279,32 @@ func (h *GinHandler) PostBallotForElectionByMember(c *gin.Context) {
 		Nominees: ballot.NomineeVotes(),
 	},
 	)
+}
+
+func (h *GinHandler) GetElectionResult(c *gin.Context) {
+	election_id := c.Param("election_id")
+	electionResult, err := h.storage.GetLASFSElectionResult(election_id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponsePayload{
+			ErrorMessage: "error processing election result",
+		})
+	} else {
+		votes := map[string]int{
+			"deadballots": len(electionResult.DeadBallots),
+		}
+
+		for nominee, bucket := range electionResult.NomineeBuckets {
+			votes[nominee] = len(bucket)
+		}
+		c.JSON(http.StatusOK, GetLASFSElectionResultPayload{
+			ElectionID:  electionResult.ElectionID,
+			Position:    electionResult.Position,
+			BallotTotal: electionResult.BallotCount,
+			Nominees:    electionResult.Nominees,
+			Votes:       votes,
+		},
+		)
+	}
 }
 
 func SetupGin(ginHandler *GinHandler, r *gin.Engine) {
@@ -295,6 +321,7 @@ func SetupGin(ginHandler *GinHandler, r *gin.Engine) {
 	r.GET("/votes/:election_id", ginHandler.GetLASFSElectionBallots)
 	r.POST("/vote/:election_id/:member_id", ginHandler.PostBallotForElectionByMember)
 	r.GET("/vote/:election_id/:member_id", ginHandler.GetBallotForElectionByMember)
+	r.GET("/electionresults/:election_id", ginHandler.GetElectionResult)
 }
 
 func RunGIN() {

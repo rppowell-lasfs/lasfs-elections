@@ -14,6 +14,7 @@ type StorageInterface interface {
 	NewLASFSBallot(memberId string, nominees []string) (*types.LASFSBallot, error)
 	AddLASFSBallot(election_id string, ballot types.LASFSBallot) (*types.LASFSElection, error)
 	AddNewLASFSBallot(election_id string, member_id string, nominees []string) (*types.LASFSElection, error)
+	GetLASFSElectionResult(id string) (*types.LASFSElectionResult, error)
 	StorageLASFSMemberInterface
 }
 

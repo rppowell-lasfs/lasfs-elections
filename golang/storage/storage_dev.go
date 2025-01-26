@@ -135,3 +135,31 @@ func (s *DevStorage) AddNewLASFSBallot(election_id string, member_id string, nom
 	return e, nil
 
 }
+
+func (s *DevStorage) GetLASFSElectionResultAtCount(election_id string, count int) (*types.LASFSElectionResult, error) {
+	lasfsElection, err := s.GetLASFSElectionByID(election_id)
+	if err != nil {
+		return nil, err
+	}
+	electionResult := lasfsElection.InitializeElectionResultReport()
+	for i, ballot := range lasfsElection.LASFSBallots {
+		if i < count {
+			electionResult.ProcessLASFSBallot(*ballot)
+		} else {
+			break
+		}
+	}
+	return electionResult, nil
+}
+
+func (s *DevStorage) GetLASFSElectionResult(election_id string) (*types.LASFSElectionResult, error) {
+	lasfsElection, err := s.GetLASFSElectionByID(election_id)
+	if err != nil {
+		return nil, err
+	}
+	electionResult := lasfsElection.InitializeElectionResultReport()
+	for _, ballot := range lasfsElection.LASFSBallots {
+		electionResult.ProcessLASFSBallot(*ballot)
+	}
+	return electionResult, nil
+}

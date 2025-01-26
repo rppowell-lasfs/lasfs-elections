@@ -26,6 +26,21 @@ func NewLASFSElection(position string, createdDateTime time.Time, nominees []str
 	}
 }
 
+func (l *LASFSElection) InitializeElectionResultReport() *LASFSElectionResult {
+	nominees := make([]string, len(l.Nominees))
+	copy(nominees, l.Nominees)
+	nomineeBuckets := make(map[string][]LASFSBallot)
+
+	electionResults := LASFSElectionResult{
+		ElectionID:     l.ID,
+		Position:       l.Position,
+		BallotCount:    len(l.LASFSBallots),
+		Nominees:       nominees,
+		NomineeBuckets: nomineeBuckets,
+	}
+	return &electionResults
+}
+
 func makeLASFSElectionID(position string, createdDateTime time.Time) string {
 	// time.RFC3339 `2006-01-02T15:04:05Z07:00`
 	// `2006-01-02T15-04-05.000000000Z0700`

@@ -5,8 +5,10 @@ import (
 )
 
 type LASFSElectionResult struct {
+	ElectionID     string
 	Position       string
 	ElectionStatus string
+	BallotCount    int
 	Nominees       []string
 	NomineeBuckets map[string][]LASFSBallot
 	DeadBallots    []LASFSBallot
