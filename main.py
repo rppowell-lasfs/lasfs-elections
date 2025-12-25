@@ -20,6 +20,10 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
 
+ELECTIONS = [
+    {'id':'1', 'position': "President", 'nominees': ["Matthew", "Michelle", "Karl"]}
+]
+
 home_html = """
 <!doctype html>
 <title>Home</title>
