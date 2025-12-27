@@ -1,6 +1,8 @@
 from flask import Flask, render_template_string, request, redirect, url_for, session
+from sqlalchemy.orm import Mapped, mapped_column
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from typing import List
 import logging
 
 app = Flask(__name__)
@@ -31,29 +33,35 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
 class Election(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    id: Mapped[int] = mapped_column('id', primary_key=True)
+    name: Mapped[str] = mapped_column('name', nullable=False)
+    positions: Mapped[List['Position']] = db.relationship(back_populates='election')
+    # positions = db.relationship('Position', back_populates='election')
 
 class Position(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    election_id = db.Column(db.Integer, db.ForeignKey("election.id"))
-    nominees = db.relationship(
-        'Nominee',
-        backref='nominee',
-        lazy='dynamic'
-    )
+    id: Mapped[int] = mapped_column('id', primary_key=True)
+    name: Mapped[str] = mapped_column('name', nullable=False)
+    election_id: Mapped[int] = mapped_column(db.ForeignKey("election.id"))
+    election: Mapped[Election] = db.relationship(back_populates='positions')
+    nominees: Mapped[List['Nominee']] = db.relationship(back_populates='position')
+    # election = db.relationship('Election', back_populates='positions')
+    # nominees: Mapped[list['Nominee']] = db.relationship('Nominee',
+    #     back_populates='nominee'
+    #     # backref='nominee'
+    #     # lazy='dynamic'
+    # )
+    # # election = db.relationship('Election', backref='')
 
 class Nominee(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    position_id = db.Column(db.Integer, db.ForeignKey("position.id"))
+    id: Mapped[int] = mapped_column('id', primary_key=True)
+    name: Mapped[str] = mapped_column('name', nullable=False)
+    position_id: Mapped[int] = mapped_column('position_id', db.ForeignKey("position.id"))
+    position: Mapped[Position] = db.relationship(back_populates='nominees')
 
 class Vote(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer)
-    nominee_id = db.Column(db.Integer)
-    election_id = db.Column(db.Integer)
+    id: Mapped[int] = db.Column(db.Integer, primary_key=True)
+    user_id: Mapped[int] = db.Column(db.Integer)
+    nominee_id: Mapped[int] = db.Column(db.Integer)
 
 
 TEST_ELECTIONS = [
@@ -260,6 +268,7 @@ def manage_role(position_id):
             <li>{{ n.name }}</li>
         {% endfor %}
     </ul>
+    <a href="/admin/election/{{ position.election_id }}">Back to {{ position.election.name }} </a><br>
     """ , position=position, nominees=nominees)
 
 
